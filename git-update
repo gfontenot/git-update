@@ -42,7 +42,7 @@ if [[ $merge_base_sha == $remote_sha ]]; then
   success "Already up to date!"
 fi
 
-repo_dirty=$(git status -s | egrep 'M|A|D|UU')
+repo_dirty=$(git status --short | egrep 'M|A|D|UU')
 stashed_changes=false
 
 if $repo_dirty; then
@@ -56,7 +56,7 @@ if [[ $merge_base_sha == $head_sha ]]; then
   git merge --ff-only $upstream_branch
 else
   echo "Both local and remote branches have moved on. Branch '$local_branch' needs to be rebased onto '$upstream_branch'"
-  git rebase -p $upstream_branch
+  git rebase --preserve-merges $upstream_branch
 fi
 
 if $stashed_changes; then
