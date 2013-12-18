@@ -2,14 +2,15 @@
 
 green="\033[32m"
 red="\033[31m"
+color_reset="\033[0m"
 
 function success() {
-  echo "${green}${1}"
+  echo "${green}${1}${color_reset}"
   exit 0
 }
 
 function failure() {
-  echo "${red}${1}"
+  echo "${red}${1}${color_reset}"
   exit 1
 }
 
