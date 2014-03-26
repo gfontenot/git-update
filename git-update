@@ -14,50 +14,55 @@ function failure() {
   exit 1
 }
 
-if [[ ! -d .git ]]; then
+if [ ! -d .git ]; then
   failure "You must run this command from inside a git repository"
 fi
 
 local_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
-tracking_remote=$(git config branch.${local_branch}.remote) || "origin"
-git fetch $tracking_remote
-tracking_branch=$(git config branch.${local_branch}.merge | sed 's|refs/heads/||') || $local_branch
-upstream_branch=${tracking_remote}/${tracking_branch}
 
-if ! git rev-parse $upstream_branch > /dev/null; then
+tracking_remote=$(git config branch.${local_branch}.remote)
+: ${tracking_remote:="origin"}
+
+git fetch "$tracking_remote"
+
+tracking_branch=$(git config branch.${local_branch}.merge | sed 's|refs/heads/||')
+: ${tracking_branch:=$local_branch}
+
+upstream_branch="${tracking_remote}/${tracking_branch}"
+
+if ! git rev-parse "$upstream_branch" > /dev/null; then
   failure "Upstream branch ${upstream_branch} doesn't exist!"
 fi
 
 head_sha=$(git rev-parse HEAD)
-remote_sha=$(git rev-parse $upstream_branch)
+remote_sha=$(git rev-parse "$upstream_branch")
 
-if [[ $head_sha == $remote_sha ]]; then
+if [ "$head_sha" = "$remote_sha" ]; then
   echo "Neither your local branch '$local_branch', nor the remote branch '$upstream_branch' have moved on."
   success "Already up to date!"
 fi
 
-merge_base_sha=$(git merge-base $head_sha $remote_sha)
+merge_base_sha=$(git merge-base "$head_sha" "$remote_sha")
 
-if [[ $merge_base_sha == $remote_sha ]]; then
+if [ "$merge_base_sha" = "$remote_sha" ]; then
   echo "Remote branch $upstream_branch has not moved on"
   success "Already up to date!"
 fi
 
-repo_dirty=$(git status --short | egrep 'M|A|D|UU')
 stashed_changes=false
 
-if $repo_dirty; then
+if git status --short | egrep 'M|A|D|UU'; then
   echo "Stashing local changes"
   git stash
-  $stashed_changes=true
+  stashed_changes=true
 fi
 
-if [[ $merge_base_sha == $head_sha ]]; then
+if [ "$merge_base_sha" = "$head_sha" ]; then
   echo "Local branch '$local_branch' has not moved on. Fast-forwarding..."
-  git merge --ff-only $upstream_branch
+  git merge --ff-only "$upstream_branch"
 else
   echo "Both local and remote branches have moved on. Branch '$local_branch' needs to be rebased onto '$upstream_branch'"
-  git rebase --preserve-merges $upstream_branch
+  git rebase --preserve-merges "$upstream_branch"
 fi
 
 if $stashed_changes; then
@@ -65,6 +70,6 @@ if $stashed_changes; then
   git stash pop
 fi
 
-git log --format=custom --graph $merge_base_sha..$remote_sha
+git log --format=custom --graph "$merge_base_sha".."$remote_sha"
 
 success "All good"
