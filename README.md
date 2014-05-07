@@ -22,13 +22,16 @@ git-update will perform the following actions when pulling:
    changes
  - Display a paged git log of the pulled changes
 
-The git log uses a custom log format that you can define inside your
-gitconfig. For example, here's mine:
+The git log will use a custom log format if you've defined `pretty.custom` in
+your gitconfig. If you haven't set a custom format, it will use the following:
 
 ```
-[pretty]
-  custom = %C(yellow)%h%Cblue%d%Creset %s - %C(white)%an %Cgreen(%cr)%Creset
+%C(yellow)%h%Cblue%d%Creset %s - %C(white)%an %Cgreen(%cr)%Creset
 ```
+
+This outputs a log formatted like so:
+
+![](https://files.app.net/24s27H0jx.png)
 
 This prints the log like so:
 
