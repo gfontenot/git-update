@@ -14,7 +14,8 @@ function failure() {
   exit 1
 }
 
-if [ ! -d .git ]; then
+if ! git rev-parse --git-dir > /dev/null 2>&1; then
+
   failure "You must run this command from inside a git repository"
 fi
 
