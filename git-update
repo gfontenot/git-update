@@ -70,6 +70,12 @@ if $stashed_changes; then
   git stash pop
 fi
 
-git log --format=custom --graph "$merge_base_sha".."$remote_sha"
+default_format="%C(yellow)%h%Cblue%d%Creset %s - %C(white)%an %Cgreen(%cr)%Creset"
+
+if git config pretty.custom; then
+  default_format="custom"
+fi
+
+git log --format="$default_format" --graph "$merge_base_sha".."$remote_sha"
 
 success "All good"
