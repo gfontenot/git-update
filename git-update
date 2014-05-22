@@ -6,18 +6,17 @@ green="\033[32m"
 red="\033[31m"
 color_reset="\033[0m"
 
-function success() {
+success () {
   echo "${green}${1}${color_reset}"
   exit 0
 }
 
-function failure() {
+failure () {
   echo "${red}${1}${color_reset}"
   exit 1
 }
 
 if ! git rev-parse --git-dir > /dev/null 2>&1; then
-
   failure "You must run this command from inside a git repository"
 fi
 
@@ -45,40 +44,71 @@ if [ "$head_sha" = "$remote_sha" ]; then
   success "Already up to date!"
 fi
 
-merge_base_sha=$(git merge-base "$head_sha" "$remote_sha")
+__git_update_stash () {
+  if git status --short | egrep 'M|A|D|UU'; then
+    echo "Stashing local changes"
+    git stash
+    stashed_changes=true
+  fi
+}
 
-if [ "$merge_base_sha" = "$remote_sha" ]; then
+__git_update_unstash () {
+  if [ ! -z $stashed_changes ]; then
+    echo "Reapplying local changes"
+    git stash pop
+  fi
+}
+
+__git_update_prettyprint_log () {
+  default_format="%C(yellow)%h%Cblue%d%Creset %s - %C(white)%an %Cgreen(%cr)%Creset"
+
+  if git config pretty.custom; then
+    default_format="custom"
+  fi
+
+  merge_base_sha=$(git merge-base "$head_sha" "$remote_sha")
+  git log --format="$default_format" --graph "$merge_base_sha".."$remote_sha"
+}
+
+__git_update_no_upstream () {
+  # This is duplicate behavior of an earlier check. The previous check is
+  # necessary because getting $head_sha and $remote_sha would cause an error if
+  # there was not an upstream. Theoritically this shouldn't ever be called.
+  failure "Upstream branch ${upstream_branch} doesn't exist!"
+}
+
+__git_update_no_changes () {
+  echo "Neither your local branch '$local_branch', nor the remote branch '$upstream_branch' have moved on."
+  success "Already up to date!"
+}
+
+__git_update_ahead () {
   echo "Remote branch $upstream_branch has not moved on"
   success "Already up to date!"
-fi
+}
 
-stashed_changes=false
-
-if git status --short | egrep 'M|A|D|UU'; then
-  echo "Stashing local changes"
-  git stash
-  stashed_changes=true
-fi
-
-if [ "$merge_base_sha" = "$head_sha" ]; then
+__git_update_behind () {
+  __git_update_stash
   echo "Local branch '$local_branch' has not moved on. Fast-forwarding..."
   git merge --ff-only "$upstream_branch"
-else
+  __git_update_unstash
+  __git_update_prettyprint_log
+  success "All good"
+}
+
+__git_update_diverged () {
+  __git_update_stash
   echo "Both local and remote branches have moved on. Branch '$local_branch' needs to be rebased onto '$upstream_branch'"
   git rebase --preserve-merges "$upstream_branch"
-fi
+  __git_update_unstash
+  __git_update_prettyprint_log
+  success "All good"
+}
 
-if $stashed_changes; then
-  echo "Reapplying local changes"
-  git stash pop
-fi
-
-default_format="%C(yellow)%h%Cblue%d%Creset %s - %C(white)%an %Cgreen(%cr)%Creset"
-
-if git config pretty.custom; then
-  default_format="custom"
-fi
-
-git log --format="$default_format" --graph "$merge_base_sha".."$remote_sha"
-
-success "All good"
+case $(git rev-list --count --left-right "$remote_sha"..."$head_sha" 2>/dev/null) in
+"") __git_update_no_upstream ;;
+$'0\t0') __git_update_no_changes ;;
+$'0\t'*) __git_update_ahead ;;
+*$'\t0') __git_update_behind ;;
+*) __git_update_diverged ;;
+esac
