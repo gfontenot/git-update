@@ -73,11 +73,9 @@ if $stashed_changes; then
   git stash pop
 fi
 
-default_format="%C(yellow)%h%Cblue%d%Creset %s - %C(white)%an %Cgreen(%cr)%Creset"
-
-if git config pretty.custom; then
-  default_format="custom"
-fi
+default_format=$(
+  git config --get pretty.update ||
+  echo "%C(yellow)%h%Cblue%d%Creset %s - %C(white)%an %Cgreen(%cr)%Creset")
 
 git log --format="$default_format" --graph "$merge_base_sha".."$remote_sha"
 
