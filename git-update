@@ -47,25 +47,30 @@ fi
 
 merge_base_sha=$(git merge-base "$head_sha" "$remote_sha")
 
-if [ "$merge_base_sha" = "$remote_sha" ]; then
+case $(git rev-list --count --left-right "$remote_sha"..."$head_sha" 2>/dev/null) in
+"") # no upstream
+  failure "Upstream branch ${upstream_branch} doesn't exist!"
+$'0\t0')
+  echo "Neither your local branch '$local_branch', nor the remote branch '$upstream_branch' have moved on."
+  success "Already up to date!"
+$'0\t'*) # ahead of upstream
   echo "Remote branch $upstream_branch has not moved on"
   success "Already up to date!"
-fi
+*$'\t0') # behind upstream
+  echo "Local branch '$local_branch' has not moved on. Fast-forwarding..."
+  git merge --ff-only "$upstream_branch"
+*) # diverged from upstream
+  echo "Both local and remote branches have moved on. Branch '$local_branch' needs to be rebased onto '$upstream_branch'"
+  git rebase --preserve-merges "$upstream_branch"
+esac
 
+!!!!!!!!!!!!!!!!!!!Move stash before 61 and 64, unstash after
 stashed_changes=false
 
 if git status --short | egrep 'M|A|D|UU'; then
   echo "Stashing local changes"
   git stash
   stashed_changes=true
-fi
-
-if [ "$merge_base_sha" = "$head_sha" ]; then
-  echo "Local branch '$local_branch' has not moved on. Fast-forwarding..."
-  git merge --ff-only "$upstream_branch"
-else
-  echo "Both local and remote branches have moved on. Branch '$local_branch' needs to be rebased onto '$upstream_branch'"
-  git rebase --preserve-merges "$upstream_branch"
 fi
 
 if $stashed_changes; then
