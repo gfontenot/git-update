@@ -60,11 +60,9 @@ __git_update_unstash () {
 }
 
 __git_update_prettyprint_log () {
-  default_format="%C(yellow)%h%Cblue%d%Creset %s - %C(white)%an %Cgreen(%cr)%Creset"
-
-  if git config pretty.custom; then
-    default_format="custom"
-  fi
+  default_format=$(
+    git config --get pretty.update ||
+    echo "%C(yellow)%h%Cblue%d%Creset %s - %C(white)%an %Cgreen(%cr)%Creset")
 
   merge_base_sha=$(git merge-base "$head_sha" "$remote_sha")
   git log --format="$default_format" --graph "$merge_base_sha".."$remote_sha"
