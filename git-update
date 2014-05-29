@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 set -e
 
@@ -7,12 +7,12 @@ red="\033[31m"
 color_reset="\033[0m"
 
 success () {
-  echo "${green}${1}${color_reset}"
+  echo -e "${green}${1}${color_reset}"
   exit 0
 }
 
 failure () {
-  echo "${red}${1}${color_reset}"
+  echo -e "${red}${1}${color_reset}"
   exit 1
 }
 
