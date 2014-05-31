@@ -18,11 +18,11 @@ git-update will perform the following actions when pulling:
  - Stash local changes if they exist, popping the stash after the pull is
    complete
  - Perform a fast-forward merge if the local branch hasn't moved on
- - Perform a rebase -p on top of the remote branch if there are new local
+ - Perform a `rebase -p` on top of the remote branch if there are new local
    changes
  - Display a paged git log of the pulled changes
 
-The git log will use a custom log format if you've defined `pretty.custom` in
+The git log will use a custom log format if you've defined `pretty.update` in
 your gitconfig. If you haven't set a custom format, it will use the following:
 
 ```
