@@ -2,17 +2,13 @@
 
 set -e
 
-green="\033[32m"
-red="\033[31m"
-color_reset="\033[0m"
-
 success () {
-  echo "${green}${1}${color_reset}"
+  printf "\e[0;32m%s\e[0m\n" "$1"
   exit 0
 }
 
 failure () {
-  echo "${red}${1}${color_reset}"
+  printf "\e[0;31m%s\e[0m\n" "$1"
   exit 1
 }
 
@@ -45,7 +41,7 @@ if [ "$head_sha" = "$remote_sha" ]; then
 fi
 
 __git_update_stash () {
-  if git status --short | egrep 'M|A|D|UU'; then
+  if git status --short | grep -E 'M|A|D|UU'; then
     echo "Stashing local changes"
     git stash
     stashed_changes=true
