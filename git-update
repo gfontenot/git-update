@@ -47,7 +47,7 @@ fi
 __git_update_stash () {
   if git status --short | egrep 'M|A|D|UU'; then
     echo "Stashing local changes"
-    git stash
+    git -c commit.gpgsign=false stash
     stashed_changes=true
   fi
 }
