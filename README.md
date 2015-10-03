@@ -1,13 +1,16 @@
 # git-update #
 
-Smarter git-pull. Inspired by, and mostly cribbed from, [git-smart](https://github.com/geelen/git-smart/blob/master/lib/commands/smart-pull.rb). But, you know, in shell. Because.
+Smarter git-pull. Inspired by, and mostly cribbed from, [git-smart]. But, you
+know, in shell. Because.
+
+[git-smart]: https://github.com/geelen/git-smart/blob/master/lib/commands/smart-pull.rb
 
 ## Installation ##
 
 git-update can easily be installed with homebrew:
 
 ```
-brew tap gfontenot/gitupdate
+brew tap gfontenot/formulae
 brew install git-update
 ```
 
