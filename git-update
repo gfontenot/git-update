@@ -35,33 +35,13 @@ fi
 head_sha=$(git rev-parse HEAD)
 remote_sha=$(git rev-parse "$upstream_branch")
 
-if [ "$head_sha" = "$remote_sha" ]; then
-  echo "Neither your local branch '$local_branch', nor the remote branch '$upstream_branch' have moved on."
-  success "Already up to date!"
-fi
-
-__git_update_stash () {
-  if git status --short | grep -E 'M|A|D|UU'; then
-    echo "Stashing local changes"
-    git -c commit.gpgsign=false stash
-    stashed_changes=true
-  fi
-}
-
-__git_update_unstash () {
-  if [ ! -z $stashed_changes ]; then
-    echo "Reapplying local changes"
-    git stash pop
-  fi
-}
-
 __git_update_prettyprint_log () {
-  default_format=$(
+  format=$(
     git config --get pretty.update ||
     echo "%C(yellow)%h%Cblue%d%Creset %s - %C(white)%an %Cgreen(%cr)%Creset")
 
   merge_base_sha=$(git merge-base "$head_sha" "$remote_sha")
-  git log --format="$default_format" --graph "$merge_base_sha".."$remote_sha"
+  git log --format="$format" --graph "$merge_base_sha".."$remote_sha"
 }
 
 __git_update_no_upstream () {
@@ -82,19 +62,15 @@ __git_update_ahead () {
 }
 
 __git_update_behind () {
-  __git_update_stash
   echo "Local branch '$local_branch' has not moved on. Fast-forwarding..."
-  git merge --ff-only "$upstream_branch"
-  __git_update_unstash
+	git pull --rebase=preserve --autostash "$upstream_branch"
   __git_update_prettyprint_log
   success "All good"
 }
 
 __git_update_diverged () {
-  __git_update_stash
   echo "Both local and remote branches have moved on. Branch '$local_branch' needs to be rebased onto '$upstream_branch'"
-  git rebase --preserve-merges "$upstream_branch"
-  __git_update_unstash
+	git pull --rebase=preserve --autostash "$upstream_branch"
   __git_update_prettyprint_log
   success "All good"
 }
