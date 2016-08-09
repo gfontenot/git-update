@@ -100,9 +100,9 @@ __git_update_diverged () {
 }
 
 case $(git rev-list --count --left-right "$remote_sha"..."$head_sha" 2>/dev/null) in
-"") __git_update_no_upstream ;;
-$'0\t0') __git_update_no_changes ;;
-$'0\t'*) __git_update_ahead ;;
-*$'\t0') __git_update_behind ;;
-*) __git_update_diverged ;;
+  "") __git_update_no_upstream ;;
+  "0\t0") __git_update_no_changes ;;
+  "0\t"*) __git_update_ahead ;;
+  *"\t0") __git_update_behind ;;
+  *) __git_update_diverged ;;
 esac
