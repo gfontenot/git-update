@@ -18,13 +18,13 @@ fi
 
 local_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 
-tracking_remote=$(git config branch.${local_branch}.remote)
-: ${tracking_remote:="origin"}
+tracking_remote=$(git config "branch.${local_branch}.remote")
+: "${tracking_remote:="origin"}"
 
 git fetch "$tracking_remote"
 
-tracking_branch=$(git config branch.${local_branch}.merge | sed 's|refs/heads/||')
-: ${tracking_branch:=$local_branch}
+tracking_branch=$(git config "branch.${local_branch}.merge" | sed 's|refs/heads/||')
+: "${tracking_branch:=$local_branch}"
 
 upstream_branch="${tracking_remote}/${tracking_branch}"
 
