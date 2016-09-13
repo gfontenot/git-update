@@ -2,7 +2,7 @@
 
 set -e
 
-upstream_branch=$(git rev-parse --abbrev-ref --symbolic-full-name @{u})
+upstream_branch=$(git rev-parse --abbrev-ref --symbolic-full-name "@{u}")
 
 head_sha=$(git rev-parse HEAD)
 remote_sha=$(git rev-parse "$upstream_branch")
