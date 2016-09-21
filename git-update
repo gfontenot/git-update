@@ -5,7 +5,6 @@ set -e
 upstream_branch=$(git rev-parse --abbrev-ref --symbolic-full-name "@{u}")
 
 head_sha=$(git rev-parse HEAD)
-remote_sha=$(git rev-parse "$upstream_branch")
 
 __git_update_prettyprint_log () {
   format=$(
@@ -17,4 +16,7 @@ __git_update_prettyprint_log () {
 }
 
 git pull --rebase=preserve --autostash
+
+remote_sha=$(git rev-parse "$upstream_branch")
+
 __git_update_prettyprint_log
